@@ -2,6 +2,8 @@
 
 Open a system standard interface, which lets the user compose and send SMS messages.(iMessage etc)
 
+![EB4B4044-6A97-43D3-8253-80E0A94A5AA8](https://user-images.githubusercontent.com/20337903/114843299-576f1700-9de2-11eb-92bc-b7e759838da1.GIF)
+
 ## Installation
 
 ```sh
