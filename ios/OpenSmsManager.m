@@ -1,12 +1,12 @@
-#import "OpenSmsViewManager.h"
+#import "OpenSmsManager.h"
 #import <React/RCTConvert.h>
 #import <MessageUI/MessageUI.h>
 
-@interface OpenSmsViewManager() <MFMessageComposeViewControllerDelegate>
+@interface OpenSmsManager() <MFMessageComposeViewControllerDelegate>
 
 @end
 
-@implementation OpenSmsViewManager
+@implementation OpenSmsManager
 {
     NSMutableArray *composeViews;
     NSMutableArray *composeCallbacks;
@@ -19,6 +19,7 @@
 
 + (BOOL)requiresMainQueueSetup
 {
+    // Module require access to UIKit, so requiring main thread
     return YES;
 }
 
@@ -32,14 +33,17 @@
     return self;
 }
 
-RCT_EXPORT_MODULE(OpenSmsView)
+RCT_EXPORT_MODULE(OpenSms)
 
-RCT_EXPORT_METHOD(displaySMSComposerSheet:(NSDictionary *)props callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(displaySMSComposerSheet:(NSDictionary *)props
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+                
 {
     // Checking the availability of message services
     if(![MFMessageComposeViewController canSendText])
     {
-        callback(@[@"notsupported"]);
+        resolve(@"notsupported");
         return;
     }
 
@@ -48,7 +52,6 @@ RCT_EXPORT_METHOD(displaySMSComposerSheet:(NSDictionary *)props callback:(RCTRes
 
     if(props[@"recipients"])
     {
-        // check that recipients was passed as an NSArray
         if([props[@"recipients"] isKindOfClass:[NSArray class]])
         {
             NSArray *recipients = props[@"recipients"];
@@ -69,17 +72,17 @@ RCT_EXPORT_METHOD(displaySMSComposerSheet:(NSDictionary *)props callback:(RCTRes
                 }
                 else
                 {
-                    RCTLog(@"You provided a recipients array but it did not contain any valid argument types");
+                    RCTLog(@"Recipients are invalid");
                 }
             }
             else
             {
-                RCTLog(@"You provided a recipients array but it was empty. No values to add");
+                RCTLog(@"Recipients must be NOT empty");
             }
         }
         else
         {
-            RCTLog(@"recipients must be supplied as an array. Ignoring the values provided");
+            RCTLog(@"Recipients must be an array");
         }
     }
     
@@ -92,24 +95,24 @@ RCT_EXPORT_METHOD(displaySMSComposerSheet:(NSDictionary *)props callback:(RCTRes
     [rootViewController presentViewController:composeVC animated:YES completion:nil];
 
     [composeViews addObject:composeVC];
-    [composeCallbacks addObject:callback];
+    [composeCallbacks addObject:resolve];
 }
 
 -(void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
 {
     NSUInteger index = [composeViews indexOfObject:controller];
     RCTAssert(index != NSNotFound, @"Dismissed view controller was not recognised");
-    RCTResponseSenderBlock callback = composeCallbacks[index];
+    RCTPromiseResolveBlock callback = composeCallbacks[index];
 
     switch (result) {
         case MessageComposeResultCancelled:
-            callback(@[@"cancelled"]);
+            callback(@"cancelled");
             break;
         case MessageComposeResultFailed:
-            callback(@[@"failed"]);
+            callback(@"failed");
             break;
         case MessageComposeResultSent:
-            callback(@[@"sent"]);
+            callback(@"sent");
             break;
         default:
             break;

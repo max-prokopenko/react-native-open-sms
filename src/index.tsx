@@ -1,12 +1,25 @@
-import { requireNativeComponent, ViewStyle } from 'react-native';
+import { NativeModules } from 'react-native';
+const { OpenSms } = NativeModules;
 
-type OpenSmsProps = {
-  color: string;
-  style: ViewStyle;
+interface OpenSmsInterface {
+  displaySMSComposerSheet(props: {
+    body: string;
+    recipients: string[];
+  }): Promise<string>;
+  Types: { [key: string]: string };
+}
+
+const Types = {
+  Sent: 'sent',
+  Cancelled: 'cancelled',
+  Failed: 'failed',
+  NotSupported: 'notsupported',
 };
 
-export const OpenSmsViewManager = requireNativeComponent<OpenSmsProps>(
-  'OpenSmsView'
-);
+const OpenSmsModule = {
+  displaySMSComposerSheet: (props: { body: string; recipients: string[] }) =>
+    OpenSms.displaySMSComposerSheet(props),
+  Types: Types,
+};
 
-export default OpenSmsViewManager;
+export default OpenSmsModule as OpenSmsInterface;

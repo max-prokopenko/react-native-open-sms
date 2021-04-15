@@ -1,22 +1,72 @@
 # react-native-open-sms
 
-oepn sms
+Open a system standard interface, which lets the user compose and send SMS messages.(iMessage etc)
 
 ## Installation
 
 ```sh
-npm install react-native-open-sms
+npm install @lowkey/react-native-open-sms
+```
+or
+```sh
+yarn add @lowkey/react-native-open-sms
+```
+
+Install pods
+```sh
+npx pod-install
 ```
 
 ## Usage
 
 ```js
-import OpenSms from "react-native-open-sms";
+import OpenSms from '@lowkey/react-native-open-sms';
 
 // ...
 
-const result = await OpenSms.multiply(3, 7);
+const openComposer = () => {
+    OpenSms.displaySMSComposerSheet({
+      body: 'Hello my dear friend!',
+      recipients: ['1234567890'],
+    }).then((result: string) => {
+      switch (result) {
+        case OpenSms.Types.Sent:
+          console.log('Message was sent!');
+          break;
+        case OpenSms.Types.Cancelled:
+          console.log('Sending was cancelled!');
+          break;
+        case OpenSms.Types.Failed:
+          console.log('Sending failed');
+          break;
+        case OpenSms.Types.NotSupported:
+          console.log('Sending is not supported');
+          break;
+        default:
+          console.log('Error occupied', result);
+          break;
+      }
+    });
+  };
+
 ```
+
+## Props
+| Prop  | Type  | Description | Required |
+| ----------------| ---------------- |:----------------:|:----------------:|
+| body      | String      | Message Text     |false     |
+| recipients      | string[]      | Message recipients     |true     |
+
+## Types
+
+Action types returned when promise is resolved
+
+| Type  | Description | 
+| ----------------| ---------------- |
+| OpenSms.Types.Sent      | Message was sent      |
+| OpenSms.Types.Cancelled      | User canceled message sending      |
+| OpenSms.Types.Failed      | Message sending failed      |
+| OpenSms.Types.NotSupported      | Message sending is not supported (iOS simulator)      |
 
 ## Contributing
 
